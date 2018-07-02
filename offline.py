@@ -1,3 +1,6 @@
+#
+# 不要用这个版本导入数据，最终运行结果千差万别  （使用 offline_single.py ）
+#
 import glob
 import os
 import pickle
