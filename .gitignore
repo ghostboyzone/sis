@@ -2,6 +2,9 @@ static/*
 !static/feature
 !static/img
 !static/uploaded
+!static/temp
+!static/feature_url
+!static/img_url.txt
 !.gitkeep
 
 # Byte-compiled / optimized / DLL files
