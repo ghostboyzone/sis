@@ -18,7 +18,8 @@ fe = FeatureExtractor()
 
 def GetFeature(imgUrl):
 	try:
-		binaryData = request.urlopen(imgUrl).read()
+		response = request.urlopen(imgUrl, timeout=5.0)
+		binaryData = response.read()
 		uniqKey = Md5Sum(binaryData)
 		imgPath = 'static/temp/' + uniqKey + '.jpg'
 		imgFile = open(imgPath, 'wb')

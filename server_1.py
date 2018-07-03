@@ -43,8 +43,8 @@ class FeatureThread(Thread):
 			features = copy.deepcopy(featuresLoop)
 			imgUrls = copy.deepcopy(imgUrlsLoop)
 			# print(imgUrls)
-			print('load feature done, sleep for 30 seconds')
-			time.sleep(30)
+			print('load feature done, sleep for 60 seconds')
+			time.sleep(60)
 
 FeatureThread("feature", range(10)).start()
 # sys.exit(0)
@@ -87,4 +87,4 @@ def index():
         return render_template('index.html')
 
 if __name__=="__main__":
-    app.run(host="0.0.0.0", port=8001, debug=True)
+    app.run(host="0.0.0.0", port=8001, debug=False)
