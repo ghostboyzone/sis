@@ -75,7 +75,7 @@ def index():
         query = fe.extract(img)
         startTime = time.time()
         dists = np.linalg.norm(features - query, axis=1)  # Do search
-        ids = np.argsort(dists)[:32] # Top 32 results
+        ids = np.argsort(dists)[:48] # Top 48 results
         scores = [(dists[id], imgUrls[id]) for id in ids]
         endTime = time.time()
         app.logger.warning('Cost: %f', endTime - startTime)
