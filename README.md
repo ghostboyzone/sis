@@ -1,3 +1,23 @@
+# Sis: 通用图片检索引擎
+
+## 用法
+
+### 通过本机图片来计算
+```bash
+# 将图片文件放到static/img目录下，运行下面脚本进行离线计算
+$ python offline.py
+# 计算完毕后，启动服务端程序，默认监听端口是8000
+$ python server.py
+```
+
+### 通过图片链接来计算
+```bash
+# 将图片链接放到static/img_url.txt中，运行下面脚本进行离线计算
+$ python offline_1.py
+# 计算完毕后，启动服务端程序，默认监听端口是8001
+$ python server_1.py
+```
+
 # Sis: Simple Image Search Engine
 
 ## [Demo](http://www.simple-image-search.xyz/)
