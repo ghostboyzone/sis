@@ -10,6 +10,8 @@ import time
 import sys
 from threading import Thread
 import copy
+import multiprocessing
+from functools import partial
 
 app = Flask(__name__)
 
@@ -22,11 +24,13 @@ class FeatureThread(Thread):
 	def __init__(self, name, *args):
 		super(FeatureThread,self).__init__(name = name)
 		self.data = args
+		self.init = False
 
 	def run(self):
 		# print(self.name, self.data)
 		while True:
-			print('load feature start')
+			if not self.init:
+				print('load feature start')
 			featuresLoop = []
 			imgUrlsLoop = []
 			for feature_path in glob.glob("static/feature_url/*.pkl"):
@@ -42,39 +46,36 @@ class FeatureThread(Thread):
 			global imgUrls
 			features = copy.deepcopy(featuresLoop)
 			imgUrls = copy.deepcopy(imgUrlsLoop)
-			# print(imgUrls)
-			print('load feature done, sleep for 60 seconds')
+			if self.init:
+				print('refresh feature done, total feature:', len(features))
+			else:
+				print('load feature done, ready to serve, total feature:', len(features))
+				self.init = True
 			time.sleep(60)
 
 FeatureThread("feature", range(10)).start()
-# sys.exit(0)
 
-# for feature_path in glob.glob("static/feature_url/*.pkl"):
-#     imgFileName = 'static/feature_url/' + os.path.splitext(os.path.basename(feature_path))[0] + '.map'
-#     f = open(imgFileName)
-#     imgUrl = f.read().strip()
-#     f.close()
-#     if len(imgUrl) == 0:
-#     	continue
-#     features.append(pickle.load(open(feature_path, 'rb')))
-#     imgUrls.append(imgUrl)
-#     # sys.exit(0)
+def CalNorm(query, feature):
+	return np.linalg.norm(feature - query)
+
+cores = multiprocessing.cpu_count()
+cores = cores * 2
+pool = multiprocessing.Pool(processes=cores)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         file = request.files['query_img']
-
         img = Image.open(file.stream)  # PIL image
         uploaded_img_path = "static/uploaded/" + datetime.now().strftime("%Y%m%d-%H%M%S-%f") + "_" + file.filename
         img.save(uploaded_img_path)
 
-        # print(features, imgUrls)
-
-        # print(len(features))
         query = fe.extract(img)
         startTime = time.time()
-        dists = np.linalg.norm(features - query, axis=1)  # Do search
+
+        dists = pool.map(partial(CalNorm, query), features)
+
+        # dists = np.linalg.norm(features - query, axis=1)  # Do search
         ids = np.argsort(dists)[:48] # Top 48 results
         scores = [(dists[id], imgUrls[id]) for id in ids]
         endTime = time.time()
@@ -87,4 +88,4 @@ def index():
         return render_template('index.html')
 
 if __name__=="__main__":
-    app.run(host="0.0.0.0", port=8001, debug=True)
+    app.run(host="0.0.0.0", port=8001, debug=False)
