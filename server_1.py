@@ -71,20 +71,20 @@ def index():
 
         # print(features, imgUrls)
 
-        startTime = time.time()
+        # print(len(features))
         query = fe.extract(img)
+        startTime = time.time()
         dists = np.linalg.norm(features - query, axis=1)  # Do search
-        ids = np.argsort(dists)[:30] # Top 30 results
+        ids = np.argsort(dists)[:32] # Top 32 results
         scores = [(dists[id], imgUrls[id]) for id in ids]
-
-        endTIme = time.time()
-        app.logger.warning('Cost: %f', endTIme - startTime)
+        endTime = time.time()
+        app.logger.warning('Cost: %f', endTime - startTime)
 
         return render_template('index.html',
                                query_path=uploaded_img_path,
-                               scores=scores)
+                               scores=scores, total=len(scores), f_total=len(features), cost=endTime - startTime)
     else:
         return render_template('index.html')
 
 if __name__=="__main__":
-    app.run(host="0.0.0.0", port=8001, debug=False)
+    app.run(host="0.0.0.0", port=8001, debug=True)
