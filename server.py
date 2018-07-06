@@ -7,6 +7,8 @@ import pickle
 from datetime import datetime
 from flask import Flask, request, render_template
 import time
+import multiprocessing
+from functools import partial
 
 app = Flask(__name__)
 
@@ -19,6 +21,13 @@ for feature_path in glob.glob("static/feature/*"):
     img_paths.append('static/img/' + os.path.splitext(os.path.basename(feature_path))[0] + '.jpg')
 
 
+def CalNorm(query, feature):
+	return np.linalg.norm(feature - query)
+
+cores = multiprocessing.cpu_count()
+# cores = cores * 2
+pool = multiprocessing.Pool(processes=cores)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -28,18 +37,20 @@ def index():
         uploaded_img_path = "static/uploaded/" + datetime.now().strftime("%Y%m%d-%H%M%S-%f") + "_" + file.filename
         img.save(uploaded_img_path)
 
-        startTime = time.time()
+        
         query = fe.extract(img)
-        dists = np.linalg.norm(features - query, axis=1)  # Do search
-        ids = np.argsort(dists)[:30] # Top 30 results
-        scores = [(dists[id], img_paths[id]) for id in ids]
+        startTime = time.time()
 
-        endTIme = time.time()
-        app.logger.warning('Cost: %f', endTIme - startTime)
+        dists = pool.map(partial(CalNorm, query), features)
+        # dists = np.linalg.norm(features - query, axis=1)  # Do search
+        ids = np.argsort(dists)[:48] # Top 48 results
+        scores = [(dists[id], img_paths[id]) for id in ids]
+        endTime = time.time()
+        app.logger.warning('Cost: %f', endTime - startTime)
 
         return render_template('index.html',
                                query_path=uploaded_img_path,
-                               scores=scores)
+                               scores=scores, total=len(scores), f_total=len(features), cost=endTime - startTime)
     else:
         return render_template('index.html')
 
