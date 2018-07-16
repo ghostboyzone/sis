@@ -1,3 +1,11 @@
+*.pkl
+*.map
+static/img/*.jp*g
+static/img/*.png
+static/temp/*.jp*g
+static/temp/*.png
+static/uploaded/*.jp*g
+static/uploaded/*.png
 static/*
 !static/feature
 !static/img
